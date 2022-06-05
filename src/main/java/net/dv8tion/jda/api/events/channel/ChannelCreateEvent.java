@@ -24,8 +24,28 @@ import javax.annotation.Nonnull;
 //TODO-v5: Docs
 public class ChannelCreateEvent extends GenericChannelEvent
 {
-    public ChannelCreateEvent(@Nonnull JDA api, long responseNumber, Channel channel)
+
+    protected final boolean newlyCreated;
+
+    public ChannelCreateEvent(@Nonnull JDA api, long responseNumber, Channel channel, boolean newlyCreated)
     {
         super(api, responseNumber, channel);
+
+        this.newlyCreated = newlyCreated;
+    }
+
+    /**
+     * Whether the channel was newly created
+     *
+     * @throws IllegalStateException
+     *         If the channel type is not from a thread
+     *
+     * @return true if the channel was created, false otherwise
+     */
+    public boolean isNewlyCreated()
+    {
+        if (!getChannelType().isThread())
+            throw new IllegalStateException("The channel is not a thread channel");
+        return newlyCreated;
     }
 }
