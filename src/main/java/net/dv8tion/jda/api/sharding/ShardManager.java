@@ -19,7 +19,14 @@ import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDA.Status;
 import net.dv8tion.jda.api.OnlineStatus;
 import net.dv8tion.jda.api.entities.*;
-import net.dv8tion.jda.api.entities.channel.IGuildChannelContainer;
+import net.dv8tion.jda.api.entities.channel.Channel;
+import net.dv8tion.jda.api.entities.channel.ChannelType;
+import net.dv8tion.jda.api.entities.channel.attribute.IGuildChannelContainer;
+import net.dv8tion.jda.api.entities.channel.concrete.*;
+import net.dv8tion.jda.api.entities.channel.middleman.GuildChannel;
+import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel;
+import net.dv8tion.jda.api.entities.emoji.RichCustomEmoji;
+import net.dv8tion.jda.api.exceptions.InvalidTokenException;
 import net.dv8tion.jda.api.requests.GatewayIntent;
 import net.dv8tion.jda.api.requests.RestAction;
 import net.dv8tion.jda.api.utils.MiscUtil;
@@ -35,7 +42,6 @@ import net.dv8tion.jda.internal.utils.Checks;
 import javax.annotation.CheckReturnValue;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import javax.security.auth.login.LoginException;
 import java.util.*;
 import java.util.function.Function;
 import java.util.function.IntFunction;
@@ -228,7 +234,7 @@ public interface ShardManager extends IGuildChannelContainer
 
     /**
      * {@link net.dv8tion.jda.api.utils.cache.SnowflakeCacheView SnowflakeCacheView} of
-     * all cached {@link net.dv8tion.jda.api.entities.Category Categories} visible to this ShardManager instance.
+     * all cached {@link net.dv8tion.jda.api.entities.channel.concrete.Category Categories} visible to this ShardManager instance.
      *
      * @return {@link net.dv8tion.jda.api.utils.cache.SnowflakeCacheView SnowflakeCacheView}
      */
@@ -239,97 +245,97 @@ public interface ShardManager extends IGuildChannelContainer
     }
 
     /**
-     * Retrieves an emote matching the specified {@code id} if one is available in our cache.
+     * Retrieves a custom emoji matching the specified {@code id} if one is available in our cache.
      *
-     * <p><b>Unicode emojis are not included as {@link net.dv8tion.jda.api.entities.Emote Emote}!</b>
+     * <p><b>Unicode emojis are not included as {@link RichCustomEmoji}!</b>
      *
      * @param  id
-     *         The id of the requested {@link net.dv8tion.jda.api.entities.Emote}.
+     *         The id of the requested {@link RichCustomEmoji}.
      *
-     * @return An {@link net.dv8tion.jda.api.entities.Emote Emote} represented by this id or null if none is found in
+     * @return An {@link RichCustomEmoji} represented by this id or null if none is found in
      *         our cache.
      */
     @Nullable
-    default Emote getEmoteById(final long id)
+    default RichCustomEmoji getEmojiById(final long id)
     {
-        return this.getEmoteCache().getElementById(id);
+        return this.getEmojiCache().getElementById(id);
     }
 
     /**
-     * Retrieves an emote matching the specified {@code id} if one is available in our cache.
+     * Retrieves a custom emoji matching the specified {@code id} if one is available in our cache.
      *
-     * <p><b>Unicode emojis are not included as {@link net.dv8tion.jda.api.entities.Emote Emote}!</b>
+     * <p><b>Unicode emojis are not included as {@link RichCustomEmoji}!</b>
      *
      * @param  id
-     *         The id of the requested {@link net.dv8tion.jda.api.entities.Emote}.
+     *         The id of the requested {@link RichCustomEmoji}.
      *
      * @throws java.lang.NumberFormatException
      *         If the provided {@code id} cannot be parsed by {@link Long#parseLong(String)}
      *
-     * @return An {@link net.dv8tion.jda.api.entities.Emote Emote} represented by this id or null if none is found in
+     * @return An {@link RichCustomEmoji} represented by this id or null if none is found in
      *         our cache.
      */
     @Nullable
-    default Emote getEmoteById(@Nonnull final String id)
+    default RichCustomEmoji getEmojiById(@Nonnull final String id)
     {
-        return this.getEmoteCache().getElementById(id);
+        return this.getEmojiCache().getElementById(id);
     }
 
     /**
      * Unified {@link net.dv8tion.jda.api.utils.cache.SnowflakeCacheView SnowflakeCacheView} of
-     * all cached {@link net.dv8tion.jda.api.entities.Emote Emotes} visible to this ShardManager instance.
+     * all cached {@link RichCustomEmoji RichCustomEmojis} visible to this ShardManager instance.
      *
      *
      * @return Unified {@link net.dv8tion.jda.api.utils.cache.SnowflakeCacheView SnowflakeCacheView}
      */
     @Nonnull
-    default SnowflakeCacheView<Emote> getEmoteCache()
+    default SnowflakeCacheView<RichCustomEmoji> getEmojiCache()
     {
-        return CacheView.allSnowflakes(() -> this.getShardCache().stream().map(JDA::getEmoteCache));
+        return CacheView.allSnowflakes(() -> this.getShardCache().stream().map(JDA::getEmojiCache));
     }
 
     /**
-     * A collection of all known emotes (managed/restricted included).
+     * A collection of all known custom emojis (managed/restricted included).
      *
-     * <p><b>Hint</b>: To check whether you can use an {@link net.dv8tion.jda.api.entities.Emote Emote} in a specific
-     * context you can use {@link Emote#canInteract(net.dv8tion.jda.api.entities.Member)} or {@link
-     * Emote#canInteract(net.dv8tion.jda.api.entities.User, net.dv8tion.jda.api.entities.MessageChannel)}
+     * <p><b>Hint</b>: To check whether you can use a {@link RichCustomEmoji} in a specific
+     * context you can use {@link RichCustomEmoji#canInteract(net.dv8tion.jda.api.entities.Member)} or {@link
+     * RichCustomEmoji#canInteract(net.dv8tion.jda.api.entities.User, MessageChannel)}
      *
-     * <p><b>Unicode emojis are not included as {@link net.dv8tion.jda.api.entities.Emote Emote}!</b>
+     * <p><b>Unicode emojis are not included as {@link RichCustomEmoji}!</b>
      *
      * <p>This copies the backing store into a list. This means every call
      * creates a new list with O(n) complexity. It is recommended to store this into
-     * a local variable or use {@link #getEmoteCache()} and use its more efficient
+     * a local variable or use {@link #getEmojiCache()} and use its more efficient
      * versions of handling these values.
      *
-     * @return An immutable list of Emotes (which may or may not be available to usage).
+     * @return An immutable list of custom emojis (which may or may not be available to usage).
      */
     @Nonnull
-    default List<Emote> getEmotes()
+    default List<RichCustomEmoji> getEmojis()
     {
-        return this.getEmoteCache().asList();
+        return this.getEmojiCache().asList();
     }
 
     /**
-     * An unmodifiable list of all {@link net.dv8tion.jda.api.entities.Emote Emotes} that have the same name as the one
-     * provided. <br>If there are no {@link net.dv8tion.jda.api.entities.Emote Emotes} with the provided name, this will
+     * An unmodifiable list of all {@link RichCustomEmoji RichCustomEmojis} that have the same name as the one
+     * provided. <br>If there are no {@link RichCustomEmoji RichCustomEmojis} with the provided name, this will
      * return an empty list.
      *
-     * <p><b>Unicode emojis are not included as {@link net.dv8tion.jda.api.entities.Emote Emote}!</b>
+     * <p><b>Unicode emojis are not included as {@link RichCustomEmoji}!</b>
      *
      * @param  name
-     *         The name of the requested {@link net.dv8tion.jda.api.entities.Emote Emotes}. Without colons.
+     *         The name of the requested {@link RichCustomEmoji RichCustomEmojis}. Without colons.
      * @param  ignoreCase
      *         Whether to ignore case or not when comparing the provided name to each {@link
-     *         net.dv8tion.jda.api.entities.Emote#getName()}.
+     *         RichCustomEmoji#getName()}.
      *
-     * @return Possibly-empty list of all the {@link net.dv8tion.jda.api.entities.Emote Emotes} that all have the same
+     * @return Possibly-empty list of all the {@link RichCustomEmoji RichCustomEmojis} that all have the same
      *         name as the provided name.
      */
     @Nonnull
-    default List<Emote> getEmotesByName(@Nonnull final String name, final boolean ignoreCase)
+    default List<RichCustomEmoji> getEmojisByName(@Nonnull final String name, final boolean ignoreCase)
     {
-        return this.getEmoteCache().getElementsByName(name, ignoreCase);
+        return this.getEmojiCache().getElementsByName(name, ignoreCase);
     }
 
     /**
@@ -582,14 +588,14 @@ public interface ShardManager extends IGuildChannelContainer
     }
 
     /**
-     * An unmodifiable list of all known {@link net.dv8tion.jda.api.entities.PrivateChannel PrivateChannels}.
+     * An unmodifiable list of all known {@link net.dv8tion.jda.api.entities.channel.concrete.PrivateChannel PrivateChannels}.
      *
      * <p>This copies the backing store into a list. This means every call
      * creates a new list with O(n) complexity. It is recommended to store this into
      * a local variable or use {@link #getPrivateChannelCache()} and use its more efficient
      * versions of handling these values.
      *
-     * @return Possibly-empty list of all {@link net.dv8tion.jda.api.entities.PrivateChannel PrivateChannels}.
+     * @return Possibly-empty list of all {@link net.dv8tion.jda.api.entities.channel.concrete.PrivateChannel PrivateChannels}.
      */
     @Nonnull
     default List<PrivateChannel> getPrivateChannels()
@@ -692,14 +698,14 @@ public interface ShardManager extends IGuildChannelContainer
     }
 
     /**
-     * This returns the {@link net.dv8tion.jda.api.entities.PrivateChannel PrivateChannel} which has the same id as the one provided.
-     * <br>If there is no known {@link net.dv8tion.jda.api.entities.PrivateChannel PrivateChannel} with an id that matches the provided
+     * This returns the {@link net.dv8tion.jda.api.entities.channel.concrete.PrivateChannel PrivateChannel} which has the same id as the one provided.
+     * <br>If there is no known {@link net.dv8tion.jda.api.entities.channel.concrete.PrivateChannel PrivateChannel} with an id that matches the provided
      * one, then this will return {@code null}.
      *
      * @param  id
-     *         The id of the {@link net.dv8tion.jda.api.entities.PrivateChannel PrivateChannel}.
+     *         The id of the {@link net.dv8tion.jda.api.entities.channel.concrete.PrivateChannel PrivateChannel}.
      *
-     * @return Possibly-null {@link net.dv8tion.jda.api.entities.PrivateChannel PrivateChannel} with matching id.
+     * @return Possibly-null {@link net.dv8tion.jda.api.entities.channel.concrete.PrivateChannel PrivateChannel} with matching id.
      */
     @Nullable
     default PrivateChannel getPrivateChannelById(final long id)
@@ -708,17 +714,17 @@ public interface ShardManager extends IGuildChannelContainer
     }
 
     /**
-     * This returns the {@link net.dv8tion.jda.api.entities.PrivateChannel PrivateChannel} which has the same id as the one provided.
-     * <br>If there is no known {@link net.dv8tion.jda.api.entities.PrivateChannel PrivateChannel} with an id that matches the provided
+     * This returns the {@link net.dv8tion.jda.api.entities.channel.concrete.PrivateChannel PrivateChannel} which has the same id as the one provided.
+     * <br>If there is no known {@link net.dv8tion.jda.api.entities.channel.concrete.PrivateChannel PrivateChannel} with an id that matches the provided
      * one, this will return {@code null}.
      *
      * @param  id
-     *         The id of the {@link net.dv8tion.jda.api.entities.PrivateChannel PrivateChannel}.
+     *         The id of the {@link net.dv8tion.jda.api.entities.channel.concrete.PrivateChannel PrivateChannel}.
      *
      * @throws java.lang.NumberFormatException
      *         If the provided {@code id} cannot be parsed by {@link Long#parseLong(String)}
      *
-     * @return Possibly-null {@link net.dv8tion.jda.api.entities.PrivateChannel PrivateChannel} with matching id.
+     * @return Possibly-null {@link net.dv8tion.jda.api.entities.channel.concrete.PrivateChannel PrivateChannel} with matching id.
      */
     @Nullable
     default PrivateChannel getPrivateChannelById(@Nonnull final String id)
@@ -728,7 +734,7 @@ public interface ShardManager extends IGuildChannelContainer
 
     /**
      * {@link net.dv8tion.jda.api.utils.cache.SnowflakeCacheView SnowflakeCacheView} of
-     * all cached {@link net.dv8tion.jda.api.entities.PrivateChannel PrivateChannels} visible to this ShardManager instance.
+     * all cached {@link net.dv8tion.jda.api.entities.channel.concrete.PrivateChannel PrivateChannels} visible to this ShardManager instance.
      *
      * @return {@link net.dv8tion.jda.api.utils.cache.SnowflakeCacheView SnowflakeCacheView}
      */
@@ -1154,9 +1160,9 @@ public interface ShardManager extends IGuildChannelContainer
     /**
      * Initializes and starts all shards. This should only be called once.
      *
-     * @throws LoginException
+     * @throws InvalidTokenException
      *         If the provided token is invalid.
      */
-    void login() throws LoginException;
+    void login();
 
 }

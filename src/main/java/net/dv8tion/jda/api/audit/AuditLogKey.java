@@ -17,9 +17,14 @@
 package net.dv8tion.jda.api.audit;
 
 import net.dv8tion.jda.api.entities.Guild;
-import net.dv8tion.jda.api.entities.GuildChannel;
-import net.dv8tion.jda.api.entities.ICategorizableChannel;
-import net.dv8tion.jda.api.entities.ThreadChannel;
+import net.dv8tion.jda.api.entities.channel.ChannelType;
+import net.dv8tion.jda.api.entities.channel.attribute.ICategorizableChannel;
+import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
+import net.dv8tion.jda.api.entities.channel.concrete.ThreadChannel;
+import net.dv8tion.jda.api.entities.channel.concrete.VoiceChannel;
+import net.dv8tion.jda.api.entities.channel.middleman.GuildChannel;
+import net.dv8tion.jda.api.entities.emoji.RichCustomEmoji;
+import net.dv8tion.jda.api.entities.sticker.GuildSticker;
 
 /**
  * Enum of possible/expected keys that can be provided
@@ -211,40 +216,39 @@ public enum AuditLogKey
     CHANNEL_PARENT("parent_id"),
 
     /**
-     * Change of the {@link net.dv8tion.jda.api.entities.TextChannel#getTopic() TextChannel.getTopic()} value.
-     * <br>Only for {@link net.dv8tion.jda.api.entities.ChannelType#TEXT ChannelType.TEXT}
+     * Change of the {@link TextChannel#getTopic() TextChannel.getTopic()} value.
+     * <br>Only for {@link ChannelType#TEXT ChannelType.TEXT}
      *
      * <p>Expected type: <b>String</b>
      */
     CHANNEL_TOPIC("topic"),
 
     /**
-     * Change of the {@link net.dv8tion.jda.api.entities.TextChannel#getSlowmode() TextChannel.getSlowmode()} value.
-     * <br>Only for {@link net.dv8tion.jda.api.entities.ChannelType#TEXT ChannelType.TEXT}
+     * Change of the {@link TextChannel#getSlowmode() TextChannel.getSlowmode()} value.
+     * <br>Only for {@link ChannelType#TEXT ChannelType.TEXT}
      *
      * <p>Expected type: <b>Integer</b>
      */
     CHANNEL_SLOWMODE("rate_limit_per_user"),
 
     /**
-     * Change of the {@link net.dv8tion.jda.api.entities.VoiceChannel#getBitrate() VoiceChannel.getBitrate()} value.
-     * <br>Only for {@link net.dv8tion.jda.api.entities.ChannelType#VOICE ChannelType.VOICE}
+     * Change of the {@link VoiceChannel#getBitrate() VoiceChannel.getBitrate()} value.
+     * <br>Only for {@link ChannelType#VOICE ChannelType.VOICE}
      *
      * <p>Expected type: <b>Integer</b>
      */
     CHANNEL_BITRATE("bitrate"),
 
     /**
-     * Change of the {@link net.dv8tion.jda.api.entities.VoiceChannel#getUserLimit() VoiceChannel.getUserLimit()} value.
-     * <br>Only for {@link net.dv8tion.jda.api.entities.ChannelType#VOICE ChannelType.VOICE}
+     * Change of the {@link VoiceChannel#getUserLimit() VoiceChannel.getUserLimit()} value.
+     * <br>Only for {@link ChannelType#VOICE ChannelType.VOICE}
      *
      * <p>Expected type: <b>Integer</b>
      */
     CHANNEL_USER_LIMIT("user_limit"),
 
     /**
-     * Change of the {@link net.dv8tion.jda.api.entities.TextChannel#isNSFW() TextChannel.isNSFW()} value.
-     * <br>Only for {@link net.dv8tion.jda.api.entities.ChannelType#TEXT ChannelType.TEXT}
+     * Change of the {@link net.dv8tion.jda.api.entities.channel.attribute.IAgeRestrictedChannel#isNSFW() IAgeRestrictedChannel.isNSFW()} value.
      *
      * <p>Expected type: <b>Boolean</b>
      */
@@ -252,7 +256,7 @@ public enum AuditLogKey
 
     /**
      * Change of the {@link net.dv8tion.jda.api.Region Region} value.
-     * <br>Only for {@link net.dv8tion.jda.api.entities.ChannelType#VOICE ChannelType.VOICE} and {@link net.dv8tion.jda.api.entities.ChannelType#STAGE ChannelType.STAGE}
+     * <br>Only for {@link ChannelType#VOICE ChannelType.VOICE} and {@link ChannelType#STAGE ChannelType.STAGE}
      *
      * <p>Expected type: <b>String</b></p>
      */
@@ -260,7 +264,7 @@ public enum AuditLogKey
 
     /**
      * The integer type of this channel.
-     * <br>Use with {@link net.dv8tion.jda.api.entities.ChannelType#fromId(int) ChannelType.fromId(int)}.
+     * <br>Use with {@link ChannelType#fromId(int) ChannelType.fromId(int)}.
      *
      * <p>Expected type: <b>int</b>
      */
@@ -276,14 +280,14 @@ public enum AuditLogKey
     // THREADS
 
     /**
-     * Change of the {@link net.dv8tion.jda.api.entities.ThreadChannel#getName() ThreadChannel.getName()} value.
+     * Change of the {@link ThreadChannel#getName() ThreadChannel.getName()} value.
      *
      * <p>Expected type: <b>String</b>
      */
     THREAD_NAME("name"),
 
     /**
-     * Change of the {@link net.dv8tion.jda.api.entities.ThreadChannel#getSlowmode() ThreadChannel.getSlowmode()} value.
+     * Change of the {@link ThreadChannel#getSlowmode() ThreadChannel.getSlowmode()} value.
      *
      * <p>Expected type: <b>Integer</b>
      */
@@ -447,32 +451,62 @@ public enum AuditLogKey
     ROLE_MENTIONABLE("mentionable"),
 
 
-    // EMOTE
+    // EMOJI
     /**
-     * Change of the {@link net.dv8tion.jda.api.entities.Emote#getName() Emote.getName()} value.
+     * Change of the {@link RichCustomEmoji#getName() Emoji.getName()} value.
      *
      * <p>Expected type: <b>String</b>
      */
-    EMOTE_NAME("name"),
+    EMOJI_NAME("name"),
 
     /**
-     * Roles added to {@link net.dv8tion.jda.api.entities.Emote#getRoles() Emote.getRoles()} with this action
+     * Roles added to {@link RichCustomEmoji#getRoles() RichCustomEmoji.getRoles()} with this action
      * <br>Containing a list of {@link net.dv8tion.jda.api.entities.Role Role} IDs
      * <br>Use with {@link net.dv8tion.jda.api.entities.Guild#getRoleById(String) Guild.getRoleById(String)}
      *
      * <p>Expected type: <b>List{@literal <String>}</b>
      */
-    EMOTE_ROLES_ADD("$add"),
+    EMOJI_ROLES_ADD("$add"),
 
     /**
-     * Roles remove from {@link net.dv8tion.jda.api.entities.Emote#getRoles() Emote.getRoles()} with this action
+     * Roles remove from {@link RichCustomEmoji#getRoles() RichCustomEmoji.getRoles()} with this action
      * <br>Containing a list of {@link net.dv8tion.jda.api.entities.Role Role} IDs
      * <br>Use with {@link net.dv8tion.jda.api.entities.Guild#getRoleById(String) Guild.getRoleById(String)}
      *
      * <p>Expected type: <b>List{@literal <String>}</b>
      */
-    EMOTE_ROLES_REMOVE("$remove"),
+    EMOJI_ROLES_REMOVE("$remove"),
 
+
+    // STICKER
+
+    /**
+     * Change of the {@link GuildSticker#getName() Sticker.getName()} value.
+     *
+     * <p>Expected type: <b>String</b>
+     */
+    STICKER_NAME("name"),
+
+    /**
+     * Change of the {@link GuildSticker#getFormatType() Sticker.getFormatType()} value.
+     *
+     * <p>Expected type: <b>String</b>
+     */
+    STICKER_FORMAT("format_type"),
+
+    /**
+     * Change of the {@link GuildSticker#getDescription() Sticker.getDescription()} value.
+     *
+     * <p>Expected type: <b>String</b>
+     */
+    STICKER_DESCRIPTION("description"),
+
+    /**
+     * Change of the {@link GuildSticker#getTags() Sticker.getTags()} value.
+     *
+     * <p>Expected type: <b>String</b>
+     */
+    STICKER_TAGS("tags"),
 
     // WEBHOOK
     /**

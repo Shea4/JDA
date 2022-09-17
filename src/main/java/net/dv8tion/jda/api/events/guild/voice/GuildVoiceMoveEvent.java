@@ -17,19 +17,19 @@
 package net.dv8tion.jda.api.events.guild.voice;
 
 import net.dv8tion.jda.api.JDA;
-import net.dv8tion.jda.api.entities.AudioChannel;
 import net.dv8tion.jda.api.entities.Member;
+import net.dv8tion.jda.api.entities.channel.middleman.AudioChannel;
 
 import javax.annotation.Nonnull;
 
 /**
- * Indicates that a {@link net.dv8tion.jda.api.entities.Member Member} moves between {@link net.dv8tion.jda.api.entities.AudioChannel AudioChannels}.
+ * Indicates that a {@link net.dv8tion.jda.api.entities.Member Member} moves between {@link net.dv8tion.jda.api.entities.channel.middleman.AudioChannel AudioChannels}.
  *
  * <p><b>When the {@link net.dv8tion.jda.api.entities.Member Member} is leaving a {@link net.dv8tion.jda.api.events.guild.voice.GuildVoiceLeaveEvent GuildVoiceLeaveEvent} is fired instead</b>
  *
  * <p>Can be used to detect when a member moves from one voice channel to another in the same guild.
  *
- * <h2>Requirements</h2>
+ * <p><b>Requirements</b><br>
  *
  * <p>This event requires the {@link net.dv8tion.jda.api.utils.cache.CacheFlag#VOICE_STATE VOICE_STATE} CacheFlag to be enabled, which requires
  * the {@link net.dv8tion.jda.api.requests.GatewayIntent#GUILD_VOICE_STATES GUILD_VOICE_STATES} intent.

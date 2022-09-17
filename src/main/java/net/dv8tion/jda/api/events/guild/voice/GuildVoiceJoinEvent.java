@@ -17,19 +17,19 @@
 package net.dv8tion.jda.api.events.guild.voice;
 
 import net.dv8tion.jda.api.JDA;
-import net.dv8tion.jda.api.entities.AudioChannel;
 import net.dv8tion.jda.api.entities.Member;
+import net.dv8tion.jda.api.entities.channel.middleman.AudioChannel;
 
 import javax.annotation.Nonnull;
 
 /**
- * Indicates that a {@link net.dv8tion.jda.api.entities.Member Member} connected to a {@link net.dv8tion.jda.api.entities.AudioChannel AudioChannel}.
+ * Indicates that a {@link net.dv8tion.jda.api.entities.Member Member} connected to a {@link net.dv8tion.jda.api.entities.channel.middleman.AudioChannel AudioChannel}.
  *
  * <p><b>When the {@link net.dv8tion.jda.api.entities.Member Member} is moved a {@link net.dv8tion.jda.api.events.guild.voice.GuildVoiceMoveEvent GuildVoiceMoveEvent} is fired instead</b>
  *
  * <p>Can be used to detect when a member joins a voice channel for the first time.
  *
- * <h2>Requirements</h2>
+ * <p><b>Requirements</b><br>
  *
  * <p>This event requires the {@link net.dv8tion.jda.api.utils.cache.CacheFlag#VOICE_STATE VOICE_STATE} CacheFlag to be enabled, which requires
  * the {@link net.dv8tion.jda.api.requests.GatewayIntent#GUILD_VOICE_STATES GUILD_VOICE_STATES} intent.

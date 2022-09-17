@@ -18,12 +18,13 @@ import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Member;
-import net.dv8tion.jda.api.entities.MessageChannel;
 import net.dv8tion.jda.api.entities.User;
+import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.interactions.InteractionHook;
+import net.dv8tion.jda.api.interactions.commands.DefaultMemberPermissions;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
@@ -31,20 +32,20 @@ import net.dv8tion.jda.api.interactions.components.buttons.Button;
 import net.dv8tion.jda.api.requests.GatewayIntent;
 import net.dv8tion.jda.api.requests.restaction.CommandListUpdateAction;
 
-import javax.security.auth.login.LoginException;
 import java.util.EnumSet;
+import java.util.concurrent.TimeUnit;
 
 import static net.dv8tion.jda.api.interactions.commands.OptionType.*;
 
 public class SlashBotExample extends ListenerAdapter
 {
-    public static void main(String[] args) throws LoginException
+    public static void main(String[] args)
     {
         JDA jda = JDABuilder.createLight("BOT_TOKEN_HERE", EnumSet.noneOf(GatewayIntent.class)) // slash commands don't need any intents
                 .addEventListeners(new SlashBotExample())
                 .build();
 
-        // These commands take up to an hour to be activated after creation/update/delete
+        // These commands might take a few minutes to be active after creation/update/delete
         CommandListUpdateAction commands = jda.updateCommands();
 
         // Moderation commands with required options
@@ -53,8 +54,10 @@ public class SlashBotExample extends ListenerAdapter
                 .addOptions(new OptionData(USER, "user", "The user to ban") // USER type allows to include members of the server or other users by id
                     .setRequired(true)) // This command requires a parameter
                 .addOptions(new OptionData(INTEGER, "del_days", "Delete messages from the past days.") // This is optional
-                        .setRequiredRange(0, 7)) // Only allow values between 0 and 7 (inclusive)
+                    .setRequiredRange(0, 7)) // Only allow values between 0 and 7 (inclusive)
                 .addOptions(new OptionData(STRING, "reason", "The ban reason to use (default: Banned by <user>)")) // optional reason
+                .setGuildOnly(true) // This way the command can only be executed from a guild, and not the DMs
+                .setDefaultPermissions(DefaultMemberPermissions.enabledFor(Permission.BAN_MEMBERS)) // Only members with the BAN_MEMBERS permission are going to see this command
         );
 
         // Simple reply commands
@@ -66,11 +69,15 @@ public class SlashBotExample extends ListenerAdapter
         // Commands without any inputs
         commands.addCommands(
             Commands.slash("leave", "Make the bot leave the server")
+                .setGuildOnly(true) // this doesn't make sense in DMs
+                .setDefaultPermissions(DefaultMemberPermissions.DISABLED) // only admins should be able to use this command.
         );
 
         commands.addCommands(
             Commands.slash("prune", "Prune messages from this channel")
                 .addOption(INTEGER, "amount", "How many messages to prune (Default 100)") // simple optional argument
+                .setGuildOnly(true)
+                .setDefaultPermissions(DefaultMemberPermissions.enabledFor(Permission.MESSAGE_MANAGE))
         );
 
         // Send the new set of commands to discord, this will override any existing global commands with the new set provided here
@@ -164,10 +171,10 @@ public class SlashBotExample extends ListenerAdapter
                 OptionMapping::getAsString); // used if getOption("reason") is not null (provided)
 
         // Ban the user and send a success response
-        event.getGuild().ban(user, delDays, reason)
-            .reason(reason) // audit-log reason
-            .flatMap(v -> hook.sendMessage("Banned user " + user.getAsTag()))
-            .queue();
+        event.getGuild().ban(user, delDays, TimeUnit.DAYS)
+            .reason(reason) // audit-log ban reason (sets X-AuditLog-Reason header)
+            .flatMap(v -> hook.sendMessage("Banned user " + user.getAsTag())) // chain a followup message after the ban is executed
+            .queue(); // execute the entire call chain
     }
 
     public void say(SlashCommandInteractionEvent event, String content)

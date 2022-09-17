@@ -20,7 +20,16 @@ import gnu.trove.map.TLongObjectMap;
 import gnu.trove.map.hash.TLongObjectHashMap;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.Region;
-import net.dv8tion.jda.api.entities.*;
+import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.entities.IPermissionHolder;
+import net.dv8tion.jda.api.entities.PermissionOverride;
+import net.dv8tion.jda.api.entities.channel.ChannelType;
+import net.dv8tion.jda.api.entities.channel.attribute.IThreadContainer;
+import net.dv8tion.jda.api.entities.channel.concrete.Category;
+import net.dv8tion.jda.api.entities.channel.concrete.NewsChannel;
+import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
+import net.dv8tion.jda.api.entities.channel.concrete.ThreadChannel;
+import net.dv8tion.jda.api.entities.channel.middleman.GuildChannel;
 import net.dv8tion.jda.api.events.channel.update.*;
 import net.dv8tion.jda.api.events.guild.override.PermissionOverrideCreateEvent;
 import net.dv8tion.jda.api.events.guild.override.PermissionOverrideDeleteEvent;
@@ -30,8 +39,11 @@ import net.dv8tion.jda.api.utils.cache.CacheFlag;
 import net.dv8tion.jda.api.utils.data.DataArray;
 import net.dv8tion.jda.api.utils.data.DataObject;
 import net.dv8tion.jda.internal.JDAImpl;
-import net.dv8tion.jda.internal.entities.*;
-import net.dv8tion.jda.internal.entities.mixin.channel.attribute.IPermissionContainerMixin;
+import net.dv8tion.jda.internal.entities.EntityBuilder;
+import net.dv8tion.jda.internal.entities.GuildImpl;
+import net.dv8tion.jda.internal.entities.PermissionOverrideImpl;
+import net.dv8tion.jda.internal.entities.channel.concrete.*;
+import net.dv8tion.jda.internal.entities.channel.mixin.attribute.IPermissionContainerMixin;
 import net.dv8tion.jda.internal.requests.WebSocketClient;
 import net.dv8tion.jda.internal.utils.UnlockHook;
 import net.dv8tion.jda.internal.utils.cache.SnowflakeCacheViewImpl;
@@ -222,6 +234,7 @@ public class ChannelUpdateHandler extends SocketHandler
                 final int oldPosition = voiceChannel.getPositionRaw();
                 final int oldLimit = voiceChannel.getUserLimit();
                 final int oldBitrate = voiceChannel.getBitrate();
+                final boolean oldNsfw = voiceChannel.isNSFW();
                 if (!Objects.equals(oldName, name))
                 {
                     voiceChannel.setName(name);
@@ -271,6 +284,14 @@ public class ChannelUpdateHandler extends SocketHandler
                             new ChannelUpdateBitrateEvent(
                                     getJDA(), responseNumber,
                                     voiceChannel, oldBitrate, bitrate));
+                }
+                if (oldNsfw != nsfw)
+                {
+                    voiceChannel.setNSFW(nsfw);
+                    getJDA().handleEvent(
+                            new ChannelUpdateNSFWEvent(
+                                    getJDA(), responseNumber,
+                                    voiceChannel, oldNsfw, nsfw));
                 }
 
                 break;
@@ -365,11 +386,9 @@ public class ChannelUpdateHandler extends SocketHandler
 
         applyPermissions((IPermissionContainerMixin<?>) channel, permOverwrites);
 
-        boolean hasAccessToChannel = channel.getGuild().getSelfMember().hasPermission((IPermissionContainer) channel, Permission.VIEW_CHANNEL);
-        if (channel.getType().isMessage() && !hasAccessToChannel)
-        {
+        boolean hasAccessToChannel = channel.getGuild().getSelfMember().hasPermission(channel, Permission.VIEW_CHANNEL);
+        if (channel instanceof IThreadContainer && !hasAccessToChannel)
             handleHideChildThreads((IThreadContainer) channel);
-        }
 
         return null;
     }

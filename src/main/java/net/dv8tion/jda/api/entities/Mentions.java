@@ -17,6 +17,9 @@
 package net.dv8tion.jda.api.entities;
 
 import net.dv8tion.jda.api.JDA;
+import net.dv8tion.jda.api.entities.channel.concrete.PrivateChannel;
+import net.dv8tion.jda.api.entities.channel.middleman.GuildChannel;
+import net.dv8tion.jda.api.entities.emoji.CustomEmoji;
 import org.apache.commons.collections4.Bag;
 
 import javax.annotation.Nonnull;
@@ -89,7 +92,7 @@ public interface Mentions
     Bag<User> getUsersBag();
 
     /**
-     * An immutable list of all mentioned {@link net.dv8tion.jda.api.entities.GuildChannel GuildChannels}.
+     * An immutable list of all mentioned {@link net.dv8tion.jda.api.entities.channel.middleman.GuildChannel GuildChannels}.
      * <br>If none were mentioned, this list is empty. Elements are sorted in order of appearance.
      *
      * <p><b>This may include GuildChannels from other {@link net.dv8tion.jda.api.entities.Guild Guilds}</b>
@@ -131,7 +134,7 @@ public interface Mentions
     Bag<GuildChannel> getChannelsBag();
 
     /**
-     * An immutable list of all mentioned {@link net.dv8tion.jda.api.entities.GuildChannel GuildChannels} of type {@code clazz}.
+     * An immutable list of all mentioned {@link net.dv8tion.jda.api.entities.channel.middleman.GuildChannel GuildChannels} of type {@code clazz}.
      * <br>If none were mentioned, this list is empty. Elements are sorted in order of appearance.
      *
      * <p><b>This may include GuildChannels from other {@link net.dv8tion.jda.api.entities.Guild Guilds}</b>
@@ -240,46 +243,45 @@ public interface Mentions
     Bag<Role> getRolesBag();
 
     /**
-     * All {@link net.dv8tion.jda.api.entities.Emote Emotes} used.
-     * <br><b>This only includes Custom Emotes, not unicode Emojis.</b> JDA classifies Emotes as the Custom Emojis uploaded
-     * to a Guild and retrievable with {@link net.dv8tion.jda.api.entities.Guild#getEmotes()}. These are not the same
+     * All {@link net.dv8tion.jda.api.entities.emoji.CustomEmoji CustomEmojis} used.
+     * <br><b>This only includes Custom Emojis, not unicode Emojis.</b> These are not the same
      * as the unicode emojis that Discord also supports. Elements are sorted in order of appearance.
      *
-     * <p><b><u>Unicode emojis are not included as {@link net.dv8tion.jda.api.entities.Emote Emote}!</u></b>
+     * <p><b><u>Unicode emojis are not included as {@link net.dv8tion.jda.api.entities.emoji.CustomEmoji CustomEmojis}!</u></b>
      *
-     * @return An immutable list of the Emotes used (example match {@literal <:jda:230988580904763393>})
+     * @return An immutable list of the Custom Emojis used (example match {@literal <:jda:230988580904763393>})
      */
     @Nonnull
-    List<Emote> getEmotes();
+    List<CustomEmoji> getCustomEmojis();
 
     /**
-     * A {@link org.apache.commons.collections4.Bag Bag} of emotes used.
-     * <br>This can be used to retrieve the amount of times an emote was used.
+     * A {@link org.apache.commons.collections4.Bag Bag} of custom emojis used.
+     * <br>This can be used to retrieve the amount of times an emoji was used.
      *
      * <p><b>Example</b><br>
      * <pre>{@code
      * void sendCount(Message msg)
      * {
-     *     List<Emote> emotes = msg.getMentions().getEmotes(); // distinct list, in order of appearance
-     *     Bag<Emote> count = msg.getMentions().getEmotesBag();
+     *     List<CustomEmoji> emojis = msg.getMentions().getCustomEmojis(); // distinct list, in order of appearance
+     *     Bag<CustomEmoji> count = msg.getMentions().getCustomEmojisBag();
      *     StringBuilder content = new StringBuilder();
-     *     for (Emote emote : emotes)
+     *     for (CustomEmoji emoji : emojis)
      *     {
-     *         content.append(emote.getName())
+     *         content.append(emojis.getName())
      *                .append(": ")
-     *                .append(count.getCount(role))
+     *                .append(count.getCount(emoji))
      *                .append("\n");
      *     }
      *     msg.getChannel().sendMessage(content.toString()).queue();
      * }
      * }</pre>
      *
-     * @return {@link org.apache.commons.collections4.Bag Bag} of used emotes
+     * @return {@link org.apache.commons.collections4.Bag Bag} of used custom emojis
      *
-     * @see    #getEmotes()
+     * @see    #getCustomEmojis()
      */
     @Nonnull
-    Bag<Emote> getEmotesBag();
+    Bag<CustomEmoji> getCustomEmojisBag();
 
     /**
      * An immutable list of all mentioned {@link net.dv8tion.jda.api.entities.Member Members}.

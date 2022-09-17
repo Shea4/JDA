@@ -21,10 +21,14 @@ import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.OnlineStatus;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.*;
+import net.dv8tion.jda.api.entities.channel.attribute.IPermissionContainer;
+import net.dv8tion.jda.api.entities.channel.middleman.GuildChannel;
+import net.dv8tion.jda.api.entities.channel.unions.DefaultGuildChannelUnion;
+import net.dv8tion.jda.api.entities.emoji.RichCustomEmoji;
 import net.dv8tion.jda.api.utils.cache.CacheFlag;
 import net.dv8tion.jda.api.utils.cache.CacheView;
 import net.dv8tion.jda.internal.JDAImpl;
-import net.dv8tion.jda.internal.entities.mixin.channel.attribute.IPermissionContainerMixin;
+import net.dv8tion.jda.internal.entities.channel.mixin.attribute.IPermissionContainerMixin;
 import net.dv8tion.jda.internal.utils.Checks;
 import net.dv8tion.jda.internal.utils.Helpers;
 import net.dv8tion.jda.internal.utils.PermissionUtil;
@@ -342,9 +346,9 @@ public class MemberImpl implements Member
     }
 
     @Override
-    public boolean canInteract(@Nonnull Emote emote)
+    public boolean canInteract(@Nonnull RichCustomEmoji emoji)
     {
-        return PermissionUtil.canInteract(this, emote);
+        return PermissionUtil.canInteract(this, emoji);
     }
 
     @Override
@@ -450,9 +454,9 @@ public class MemberImpl implements Member
 
     @Nullable
     @Override
-    public BaseGuildMessageChannel getDefaultChannel()
+    public DefaultGuildChannelUnion getDefaultChannel()
     {
-        return Stream.concat(getGuild().getTextChannelCache().stream(), getGuild().getNewsChannelCache().stream())
+        return (DefaultGuildChannelUnion) Stream.concat(getGuild().getTextChannelCache().stream(), getGuild().getNewsChannelCache().stream())
                 .filter(c -> hasPermission(c, Permission.VIEW_CHANNEL))
                 .min(Comparator.naturalOrder())
                 .orElse(null);
